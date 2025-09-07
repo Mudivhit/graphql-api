@@ -9,6 +9,18 @@ import helmet from 'helmet';
 import typeDefs from './graphql/schema';
 import Resolvers from './resolvers';
 
+/**
+ * Start the Express + Apollo GraphQL server.
+ *
+ * Responsibilities:
+ * - Wire standard middleware (helmet, cors, express.json).
+ * - Initialize ApolloServer with schema and resolvers.
+ * - Expose GraphQL at /graphql and a small liveness endpoint at `/`.
+ *
+ * Environment behavior:
+ * - `PORT` defaults to 4000 if not set.
+ * - `NODE_ENV` controls Apollo introspection (disabled in production).
+ */
 async function startServer() {
   const app = express();
   const httpServer = http.createServer(app);

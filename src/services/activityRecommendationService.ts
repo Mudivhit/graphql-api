@@ -3,7 +3,25 @@ import { ActivityScoreDTO } from './interfaces/ActivityRecommendation.interfaces
 
 export type ActivityScore = ActivityScoreDTO; // backward-compatible alias
 
+/**
+ * Service that contains heuristic scoring functions mapping a single
+ * WeatherData sample to an `ActivityScoreDTO` for different activities.
+ *
+ * Notes:
+ * - All scoring functions are heuristic and return an integer score in 0..100.
+ * - Magic numbers (temperature targets, wind thresholds, weather codes) are
+ *   documented near each function and intended to be tunable.
+ */
 export class ActivityRecommendationService {
+  /**
+   * Compute a skiing suitability score from current weather.
+   * Heuristic highlights:
+   * - Prefers temperatures near -5°C and presence of snow-related weather codes.
+   * - Penalizes high winds.
+   *
+   * @param weather - WeatherData object (temperature °C, windSpeed m/s, precipitation mm, weatherCode per OpenMeteo)
+   * @returns ActivityScoreDTO with integer score 0..100 and a short description.
+   */
   calculateSkiingScore(weather: WeatherData): ActivityScoreDTO {
     // Ideal conditions: cold temperature and snow (weather codes for snow: 71-77, 85-86)
     const isSnowing =
@@ -32,6 +50,15 @@ export class ActivityRecommendationService {
     };
   }
 
+  /**
+   * Compute a surfing suitability score.
+   * Heuristic highlights:
+   * - Prefers moderate to strong winds (approx. 15 m/s best), and warmer temperatures.
+   * - Penalizes heavy precipitation.
+   *
+   * @param weather - WeatherData sample
+   * @returns ActivityScoreDTO
+   */
   calculateSurfingScore(weather: WeatherData): ActivityScoreDTO {
     // Good conditions: moderate wind and not too cold
     const windScore = Math.min(1, weather.windSpeed / 15) * 50; // Best around 15 m/s
@@ -51,6 +78,11 @@ export class ActivityRecommendationService {
     };
   }
 
+  /**
+   * Compute indoor sightseeing score. Higher when weather is poor (rain/snow/extreme temps).
+   * @param weather - WeatherData sample
+   * @returns ActivityScoreDTO
+   */
   calculateIndoorSightseeingScore(weather: WeatherData): ActivityScoreDTO {
     // Good when weather is bad (rain, snow, extreme temperatures)
     const isBadWeather =
@@ -70,6 +102,12 @@ export class ActivityRecommendationService {
     };
   }
 
+  /**
+   * Compute outdoor sightseeing score. Prefers clear or partly cloudy, low precipitation,
+   * and comfortable temperatures (around 21.5°C). Applies a wind penalty.
+   * @param weather - WeatherData sample
+   * @returns ActivityScoreDTO
+   */
   calculateOutdoorSightseeingScore(weather: WeatherData): ActivityScoreDTO {
     // Good when weather is nice (clear, partly cloudy, comfortable temperature)
     const isGoodWeather =

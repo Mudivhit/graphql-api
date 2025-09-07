@@ -2,6 +2,13 @@ import { GraphQLError } from "graphql";
 import OpenMeteoService from "../services/openmeteoService";
 import { ActivityScore } from "../services/activityRecommendationService";
 
+/**
+ * Resolver container class.
+ *
+ * Responsibility: provide functions mapped to the GraphQL `Query` fields.
+ * Resolvers should remain thin: perform input validation and delegate business
+ * logic to services (see `OpenMeteoService`).
+ */
 export default class Resolvers {
   private readonly openMeteoService: OpenMeteoService;
 
@@ -9,6 +16,10 @@ export default class Resolvers {
     this.openMeteoService = new OpenMeteoService();
   }
 
+  /**
+   * Return resolver map expected by ApolloServer.
+   * The map contains Query resolvers which validate inputs and call services.
+   */
   getResolvers() {
     return {
       Query: {
@@ -79,6 +90,10 @@ export default class Resolvers {
     };
   }
 
+  /**
+   * Validate latitude and longitude ranges used by Open-Meteo.
+   * @throws Error when values are out of bounds or not numbers.
+   */
   private validateCoordinates(latitude: number, longitude: number): void {
     if (isNaN(latitude) || latitude < -90 || latitude > 90) {
       throw new Error("Latitude must be a number between -90 and 90");

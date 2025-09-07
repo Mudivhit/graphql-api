@@ -8,6 +8,15 @@ import {
 
 export type WeatherData = WeatherDTO; // backward-compatible alias for existing imports
 
+/**
+ * Service responsible for talking to the Open-Meteo APIs and normalizing
+ * responses into the project's DTOs. This class encapsulates HTTP requests,
+ * default timeouts, and small transformation helpers.
+ *
+ * Environment variables:
+ * - OPENMETEO_GEOCODING_URL: optional override for the geocoding API base URL
+ * - OPENMETEO_WEATHER_URL: optional override for the weather API base URL
+ */
 class OpenMeteoService {
   private readonly geocodingURL: string;
   private readonly weatherURL: string;
@@ -24,7 +33,14 @@ class OpenMeteoService {
   }
 
   async searchCities(query: string, limit: number = 10) {
-    try {
+  /**
+   * Search cities by name using the Open-Meteo geocoding endpoint.
+   * @param query - Partial or full city name to search for.
+   * @param limit - Maximum number of results to return (default 10).
+   * @returns Array of City objects with id, name, country, latitude and longitude.
+   * @throws Error when the HTTP request fails.
+   */
+  try {
   const response = await this.client.get<OpenMeteoSearchResponse>(
         `${this.geocodingURL}/search`,
         {
@@ -53,7 +69,21 @@ class OpenMeteoService {
   }
 
   async getWeatherForecast(latitude: number, longitude: number, days: number = 7) {
-    try {
+  /**
+   * Fetch a forecast from the Open-Meteo API and normalize it to the
+   * WeatherDTO-friendly shape used by the GraphQL schema.
+   *
+   * Notes:
+   * - `days` is capped at 16 to match the remote API limits.
+   * - Returned units are assumed to be: temperature (°C), windSpeed (m/s), precipitation (mm).
+   *
+   * @param latitude - Latitude in decimal degrees (-90..90).
+   * @param longitude - Longitude in decimal degrees (-180..180).
+   * @param days - Number of days to request (default 7).
+   * @returns An object with `current`, `hourly` (next 24 items) and `daily` arrays.
+   * @throws Error when the HTTP request fails or response shape is unexpected.
+   */
+  try {
   const response = await this.client.get<OpenMeteoWeatherResponse>(
         `${this.weatherURL}/forecast`,
         {
@@ -111,7 +141,16 @@ class OpenMeteoService {
 
 
   async getRecommendedActivities(latitude: number, longitude: number): Promise<ActivityScore[]> {
-    try {
+  /**
+   * Obtain recommendations by fetching the current weather and running
+   * a set of heuristic scoring functions.
+   *
+   * @param latitude - Latitude in decimal degrees.
+   * @param longitude - Longitude in decimal degrees.
+   * @returns Sorted list of ActivityScore objects (highest score first).
+   * @throws Error when weather fetch or recommendation generation fails.
+   */
+  try {
       const { current } = await this.getWeatherForecast(latitude, longitude, 1);
       const activityScores = [
         this.activityRecommendationService.calculateSkiingScore(current),
