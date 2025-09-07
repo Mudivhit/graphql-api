@@ -1,13 +1,10 @@
 import { WeatherData } from "./openmeteoService";
+import { ActivityScoreDTO } from './interfaces/ActivityRecommendation.interfaces';
 
-export interface ActivityScore {
-  activity: string;
-  score: number;
-  description: string;
-}
+export type ActivityScore = ActivityScoreDTO; // backward-compatible alias
 
 export class ActivityRecommendationService {
-  calculateSkiingScore(weather: WeatherData): ActivityScore {
+  calculateSkiingScore(weather: WeatherData): ActivityScoreDTO {
     // Ideal conditions: cold temperature and snow (weather codes for snow: 71-77, 85-86)
     const isSnowing =
       (weather.weatherCode >= 71 && weather.weatherCode <= 77) ||
@@ -35,7 +32,7 @@ export class ActivityRecommendationService {
     };
   }
 
-  calculateSurfingScore(weather: WeatherData): ActivityScore {
+  calculateSurfingScore(weather: WeatherData): ActivityScoreDTO {
     // Good conditions: moderate wind and not too cold
     const windScore = Math.min(1, weather.windSpeed / 15) * 50; // Best around 15 m/s
     const tempScore =
@@ -54,7 +51,7 @@ export class ActivityRecommendationService {
     };
   }
 
-  calculateIndoorSightseeingScore(weather: WeatherData): ActivityScore {
+  calculateIndoorSightseeingScore(weather: WeatherData): ActivityScoreDTO {
     // Good when weather is bad (rain, snow, extreme temperatures)
     const isBadWeather =
       weather.precipitation > 2 ||
@@ -73,7 +70,7 @@ export class ActivityRecommendationService {
     };
   }
 
-  calculateOutdoorSightseeingScore(weather: WeatherData): ActivityScore {
+  calculateOutdoorSightseeingScore(weather: WeatherData): ActivityScoreDTO {
     // Good when weather is nice (clear, partly cloudy, comfortable temperature)
     const isGoodWeather =
       (weather.weatherCode === 0 ||
