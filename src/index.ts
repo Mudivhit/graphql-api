@@ -1,29 +1,26 @@
 import 'dotenv/config';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
+
 import express, { RequestHandler } from 'express';
 import http from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import typeDefs from './schema';
+import Resolvers from './resolvers';
 
 async function startServer() {
   const app = express();
   const httpServer = http.createServer(app);
 
-  app.use(helmet());
+  app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
   app.use(cors());
   app.use(express.json());
 
   const server = new ApolloServer({
     typeDefs,
-    resolvers: {
-      Query: {
-        hello: async () => {
-          return 'Hello World'
-        },
-      }
-    },
+    resolvers: new Resolvers().getResolvers() as any,
+    introspection: process.env.NODE_ENV !== 'production',
   });
 
   await server.start();
@@ -34,7 +31,7 @@ async function startServer() {
     res.json({
       message: 'Travel Planning GraphQL API',
       version: '1.0.0',
-      endpoints: { graphql: '/graphql'},
+      endpoints: { graphql: '/graphql' },
     });
   });
 
