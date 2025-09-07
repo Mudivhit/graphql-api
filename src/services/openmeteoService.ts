@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { ActivityRecommendationService, ActivityScore } from './activityRecommendationService';
 
 interface SearchCityResponse {
   results?: Array<{
@@ -48,16 +49,12 @@ export interface WeatherData {
   time: string;
 }
 
-export interface ActivityScore {
-  activity: string;
-  score: number;
-  description: string;
-}
 
 class OpenMeteoService {
   private readonly geocodingURL: string;
   private readonly weatherURL: string;
   private readonly client: AxiosInstance;
+  private readonly activityRecommendationService: ActivityRecommendationService;
 
   constructor() {
     this.geocodingURL = process.env.OPENMETEO_GEOCODING_URL || 'https://geocoding-api.open-meteo.com/v1';
@@ -65,6 +62,7 @@ class OpenMeteoService {
     this.client = axios.create({
       timeout: 10000,
     });
+    this.activityRecommendationService = new ActivityRecommendationService();
   }
 
   async searchCities(query: string, limit: number = 10) {
@@ -153,15 +151,15 @@ class OpenMeteoService {
     }
   }
 
+
   async getRecommendedActivities(latitude: number, longitude: number): Promise<ActivityScore[]> {
     try {
       const { current } = await this.getWeatherForecast(latitude, longitude, 1);
-
       const activityScores = [
-        this.calculateSkiingScore(current),
-        this.calculateSurfingScore(current),
-        this.calculateIndoorSightseeingScore(current),
-        this.calculateOutdoorSightseeingScore(current),
+        this.activityRecommendationService.calculateSkiingScore(current),
+        this.activityRecommendationService.calculateSurfingScore(current),
+        this.activityRecommendationService.calculateIndoorSightseeingScore(current),
+        this.activityRecommendationService.calculateOutdoorSightseeingScore(current),
       ];
 
       // Sort activities by score in descending order
@@ -170,83 +168,6 @@ class OpenMeteoService {
       console.error('Error generating activity recommendations:', error.message);
       throw new Error(`Failed to generate activity recommendations: ${error.message}`);
     }
-  }
-
-  private calculateSkiingScore(weather: WeatherData): ActivityScore {
-    // Ideal conditions: cold temperature and snow (weather codes for snow: 71-77, 85-86)
-    const isSnowing = (weather.weatherCode >= 71 && weather.weatherCode <= 77) ||
-      weather.weatherCode === 85 ||
-      weather.weatherCode === 86;
-
-    const tempScore = Math.max(0, 1 - (Math.abs(-5 - weather.temperature) / 20)); // Best around -5°C
-    const windPenalty = Math.min(1, weather.windSpeed / 30); // Penalize high winds
-
-    let score = 0;
-    if (isSnowing) {
-      score = 70 + (tempScore * 30); // Base 70 if snowing
-    } else {
-      score = tempScore * 50; // Lower score if not snowing
-    }
-
-    score *= (1 - windPenalty * 0.5); // Reduce score for high winds
-
-    return {
-      activity: 'Skiing',
-      score: Math.min(100, Math.max(0, Math.round(score))),
-      description: isSnowing ? 'Perfect conditions for skiing with fresh snow!' : 'Skiing conditions are not ideal right now.'
-    };
-  }
-
-  private calculateSurfingScore(weather: WeatherData): ActivityScore {
-    // Good conditions: moderate wind and not too cold
-    const windScore = Math.min(1, weather.windSpeed / 15) * 50; // Best around 15 m/s
-    const tempScore = weather.temperature > 10 ? 50 : (weather.temperature / 10) * 50; // Better when warmer
-    const rainPenalty = weather.precipitation > 5 ? 20 : 0; // Penalize heavy rain
-
-    const score = windScore + tempScore - rainPenalty;
-
-    return {
-      activity: 'Surfing',
-      score: Math.min(100, Math.max(0, Math.round(score))),
-      description: weather.windSpeed > 8 ? 'Good waves for surfing!' : 'Waves might be too calm for surfing.'
-    };
-  }
-
-  private calculateIndoorSightseeingScore(weather: WeatherData): ActivityScore {
-    // Good when weather is bad (rain, snow, extreme temperatures)
-    const isBadWeather = weather.precipitation > 2 ||
-      weather.temperature < 0 ||
-      weather.temperature > 30 ||
-      (weather.weatherCode >= 51 && weather.weatherCode <= 86);
-
-    const score = isBadWeather ? 80 : 30;
-
-    return {
-      activity: 'Indoor Sightseeing',
-      score,
-      description: isBadWeather ? 'Great day to explore indoor attractions!' : 'Consider outdoor activities instead.'
-    };
-  }
-
-  private calculateOutdoorSightseeingScore(weather: WeatherData): ActivityScore {
-    // Good when weather is nice (clear, partly cloudy, comfortable temperature)
-    const isGoodWeather = (weather.weatherCode === 0 || weather.weatherCode === 1 || weather.weatherCode === 2) &&
-      weather.precipitation < 2 &&
-      weather.temperature >= 15 &&
-      weather.temperature <= 28;
-
-    const windPenalty = Math.min(30, weather.windSpeed * 2);
-    const tempScore = 1 - (Math.abs(21.5 - weather.temperature) / 20) * 100; // Best around 21.5°C
-
-    let score = isGoodWeather ? 80 : 30;
-    score = (score + tempScore) / 2; // Average of base score and temperature score
-    score = Math.max(0, score - windPenalty); // Apply wind penalty
-
-    return {
-      activity: 'Outdoor Sightseeing',
-      score: Math.min(100, Math.max(0, Math.round(score))),
-      description: isGoodWeather ? 'Perfect weather for exploring outdoors!' : 'Weather conditions might not be ideal for outdoor sightseeing.'
-    };
   }
 }
 
