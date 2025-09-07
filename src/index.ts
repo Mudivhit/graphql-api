@@ -6,7 +6,7 @@ import express, { RequestHandler } from 'express';
 import http from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
-import typeDefs from './schema';
+import typeDefs from './graphql/schema';
 import Resolvers from './resolvers';
 
 async function startServer() {
