@@ -6,6 +6,62 @@ Purpose
 -------
 This repository exposes a GraphQL schema for searching cities, fetching weather forecasts, and getting recommended activities (e.g. skiing, surfing, sightseeing) based on current weather conditions.
 
+Architecture Overview
+-------------------
+- **Tech Stack**:
+  - TypeScript for type safety and better developer experience
+  - Express.js as the HTTP server framework
+  - Apollo Server for GraphQL implementation
+  - Jest for testing
+  - Helmet for security headers
+  - Axios for HTTP requests
+  
+- **Code Organization**:
+  - GraphQL schema definitions (`src/graphql/`)
+  - Thin resolvers for input validation (`src/resolvers/`)
+  - Service layer for business logic (`src/services/`)
+  - Clear interfaces for DTOs and service contracts
+  
+- **Key Design Patterns**:
+  - Repository pattern for API integrations (OpenMeteoService)
+  - Factory pattern for resolver creation
+
+Omissions & Trade-offs
+--------------------
+1. **Data Caching**:
+   - Currently no caching layer for weather/geocoding responses
+   This simplified implementation although it could lead to potential API rate limits
+   
+2. **Error Handling**:
+   - Basic error wrapping with GraphQLError
+   - Missing detailed error codes/categories
+   This was quick to implement than detailed error reporting
+
+3. **Activity Scoring**:
+   - Simple heuristic-based scoring
+   - Hard-coded weather interpretation
+   With a proper scoring standard/criteria this could be implemented for accuracy
+
+4. **Testing**:
+   - Unit tests and basic integration tests
+   - Missing E2E tests and load tests
+   Testing the core functionality coverage was faster and easier to begin with
+
+Future Improvements
+-----------------
+
+1. **Developer Experience**:
+   - Add OpenAPI/Swagger documentation
+   - Implement GraphQL schema stitching for modular development
+   - Add more comprehensive logging
+   - Improve error handling with custom error types
+
+2. **Quality & Testing**:
+   - Add E2E tests with real API integration
+   - Implement performance benchmarking
+   - Add load testing scenarios
+   - Improve test coverage
+
 Quick start
 -----------
 1. Copy environment variables:
