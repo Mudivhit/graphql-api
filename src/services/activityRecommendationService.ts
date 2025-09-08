@@ -61,12 +61,13 @@ export class ActivityRecommendationService {
    */
   calculateSurfingScore(weather: WeatherData): ActivityScoreDTO {
     // Good conditions: moderate wind and not too cold
-    const windScore = Math.min(1, weather.windSpeed / 15) * 50; // Best around 15 m/s
+    const windScore = Math.min(1, weather.windSpeed / 15) * 60; // Best around 15 m/s
     const tempScore =
-      weather.temperature > 10 ? 50 : (weather.temperature / 10) * 50; // Better when warmer
+      weather.temperature > 10 ? 40 : (weather.temperature / 10) * 40; // Better when warmer
+    const windThresholdPenalty = weather.windSpeed < 5 ? 30 : 0; // Significant penalty for too little wind
     const rainPenalty = weather.precipitation > 5 ? 20 : 0; // Penalize heavy rain
 
-    const score = windScore + tempScore - rainPenalty;
+    const score = windScore + tempScore - rainPenalty - windThresholdPenalty;
 
     return {
       activity: "Surfing",
@@ -119,11 +120,11 @@ export class ActivityRecommendationService {
       weather.temperature <= 28;
 
     const windPenalty = Math.min(30, weather.windSpeed * 2);
-    const tempScore = 1 - (Math.abs(21.5 - weather.temperature) / 20) * 100; // Best around 21.5°C
+    const tempScore = Math.max(0, 1 - (Math.abs(21.5 - weather.temperature) / 10) * 100); // Best around 21.5°C
 
-    let score = isGoodWeather ? 80 : 30;
-    score = (score + tempScore) / 2; // Average of base score and temperature score
-    score = Math.max(0, score - windPenalty); // Apply wind penalty
+    const baseScore = isGoodWeather ? 85 : 30;
+    const finalTempScore = tempScore > 0 ? tempScore * 0.8 : 0; // Weight temperature more heavily
+    const score = Math.max(0, baseScore + finalTempScore - windPenalty);
 
     return {
       activity: "Outdoor Sightseeing",
