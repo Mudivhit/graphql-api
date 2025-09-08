@@ -15,23 +15,16 @@ const typeDefs = gql`
     Search for cities by name with optional result limit
     """
     searchCities(query: String!, limit: Int = 10): [City!]!
-    
+
     """
     Get weather forecast for a specific location
     """
-    getWeatherForecast(
-      latitude: Float!
-      longitude: Float!
-      days: Int = 7
-    ): WeatherForecast!
-    
+    getWeatherForecast(latitude: Float!, longitude: Float!, days: Int = 7): WeatherForecast!
+
     """
     Get recommended activities based on weather conditions at a location
     """
-    getRecommendedActivities(
-      latitude: Float!
-      longitude: Float!
-    ): [ActivityScore!]!
+    getRecommendedActivities(latitude: Float!, longitude: Float!): [ActivityScore!]!
   }
 `;
 export default typeDefs;

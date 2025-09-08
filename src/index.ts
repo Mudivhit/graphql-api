@@ -48,13 +48,11 @@ async function startServer() {
   });
 
   const PORT = Number(process.env.PORT) || 4000;
-  await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve as any));
+  await new Promise(resolve => httpServer.listen({ port: PORT }, resolve as any));
   console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
 }
 
-startServer().catch((error) => {
+startServer().catch(error => {
   console.error('Failed to start server:', error);
   process.exit(1);
 });
-
-

@@ -1,4 +1,4 @@
-import { WeatherData } from "./openmeteoService";
+import { WeatherData } from './openmeteoService';
 import { ActivityScoreDTO } from './interfaces/ActivityRecommendation.interfaces';
 
 export type ActivityScore = ActivityScoreDTO; // backward-compatible alias
@@ -42,11 +42,11 @@ export class ActivityRecommendationService {
     score *= 1 - windPenalty * 0.5; // Reduce score for high winds
 
     return {
-      activity: "Skiing",
+      activity: 'Skiing',
       score: Math.min(100, Math.max(0, Math.round(score))),
       description: isSnowing
-        ? "Perfect conditions for skiing with fresh snow!"
-        : "Skiing conditions are not ideal right now.",
+        ? 'Perfect conditions for skiing with fresh snow!'
+        : 'Skiing conditions are not ideal right now.',
     };
   }
 
@@ -62,20 +62,17 @@ export class ActivityRecommendationService {
   calculateSurfingScore(weather: WeatherData): ActivityScoreDTO {
     // Good conditions: moderate wind and not too cold
     const windScore = Math.min(1, weather.windSpeed / 15) * 60; // Best around 15 m/s
-    const tempScore =
-      weather.temperature > 10 ? 40 : (weather.temperature / 10) * 40; // Better when warmer
+    const tempScore = weather.temperature > 10 ? 40 : (weather.temperature / 10) * 40; // Better when warmer
     const windThresholdPenalty = weather.windSpeed < 5 ? 30 : 0; // Significant penalty for too little wind
     const rainPenalty = weather.precipitation > 5 ? 20 : 0; // Penalize heavy rain
 
     const score = windScore + tempScore - rainPenalty - windThresholdPenalty;
 
     return {
-      activity: "Surfing",
+      activity: 'Surfing',
       score: Math.min(100, Math.max(0, Math.round(score))),
       description:
-        weather.windSpeed > 8
-          ? "Good waves for surfing!"
-          : "Waves might be too calm for surfing.",
+        weather.windSpeed > 8 ? 'Good waves for surfing!' : 'Waves might be too calm for surfing.',
     };
   }
 
@@ -95,11 +92,11 @@ export class ActivityRecommendationService {
     const score = isBadWeather ? 80 : 30;
 
     return {
-      activity: "Indoor Sightseeing",
+      activity: 'Indoor Sightseeing',
       score,
       description: isBadWeather
-        ? "Great day to explore indoor attractions!"
-        : "Consider outdoor activities instead.",
+        ? 'Great day to explore indoor attractions!'
+        : 'Consider outdoor activities instead.',
     };
   }
 
@@ -112,9 +109,7 @@ export class ActivityRecommendationService {
   calculateOutdoorSightseeingScore(weather: WeatherData): ActivityScoreDTO {
     // Good when weather is nice (clear, partly cloudy, comfortable temperature)
     const isGoodWeather =
-      (weather.weatherCode === 0 ||
-        weather.weatherCode === 1 ||
-        weather.weatherCode === 2) &&
+      (weather.weatherCode === 0 || weather.weatherCode === 1 || weather.weatherCode === 2) &&
       weather.precipitation < 2 &&
       weather.temperature >= 15 &&
       weather.temperature <= 28;
@@ -127,11 +122,11 @@ export class ActivityRecommendationService {
     const score = Math.max(0, baseScore + finalTempScore - windPenalty);
 
     return {
-      activity: "Outdoor Sightseeing",
+      activity: 'Outdoor Sightseeing',
       score: Math.min(100, Math.max(0, Math.round(score))),
       description: isGoodWeather
-        ? "Perfect weather for exploring outdoors!"
-        : "Weather conditions might not be ideal for outdoor sightseeing.",
+        ? 'Perfect weather for exploring outdoors!'
+        : 'Weather conditions might not be ideal for outdoor sightseeing.',
     };
   }
 }

@@ -6,24 +6,24 @@ jest.mock('axios', () => ({
     get: jest.fn(),
     interceptors: {
       request: { use: jest.fn(), eject: jest.fn() },
-      response: { use: jest.fn(), eject: jest.fn() }
-    }
-  }))
+      response: { use: jest.fn(), eject: jest.fn() },
+    },
+  })),
 }));
 
 describe('OpenMeteoService', () => {
   let service: OpenMeteoService;
   const mockAxiosGet = jest.fn();
-  
+
   beforeEach(() => {
     jest.clearAllMocks();
     const mockedAxios = require('axios');
-    mockedAxios.create.mockReturnValue({ 
+    mockedAxios.create.mockReturnValue({
       get: mockAxiosGet,
       interceptors: {
         request: { use: jest.fn(), eject: jest.fn() },
-        response: { use: jest.fn(), eject: jest.fn() }
-      }
+        response: { use: jest.fn(), eject: jest.fn() },
+      },
     });
     service = new OpenMeteoService();
   });
@@ -38,10 +38,10 @@ describe('OpenMeteoService', () => {
               name: 'London',
               country: 'United Kingdom',
               latitude: 51.5074,
-              longitude: -0.1278
-            }
-          ]
-        }
+              longitude: -0.1278,
+            },
+          ],
+        },
       });
 
       const result = await service.searchCities('London');
@@ -52,15 +52,15 @@ describe('OpenMeteoService', () => {
         name: 'London',
         country: 'United Kingdom',
         latitude: 51.5074,
-        longitude: -0.1278
+        longitude: -0.1278,
       });
     });
 
     it('should return empty array when no results found', async () => {
       mockAxiosGet.mockResolvedValueOnce({
         data: {
-          results: []
-        }
+          results: [],
+        },
       });
 
       const result = await service.searchCities('NonexistentCity');
@@ -83,14 +83,14 @@ describe('OpenMeteoService', () => {
           temperature_2m: 20,
           weather_code: 1,
           wind_speed_10m: 5,
-          precipitation: 0
+          precipitation: 0,
         },
         hourly: {
           time: Array(24).fill('2025-09-08T12:00:00Z'),
           temperature_2m: Array(24).fill(20),
           weather_code: Array(24).fill(1),
           wind_speed_10m: Array(24).fill(5),
-          precipitation: Array(24).fill(0)
+          precipitation: Array(24).fill(0),
         },
         daily: {
           time: Array(7).fill('2025-09-08'),
@@ -98,9 +98,9 @@ describe('OpenMeteoService', () => {
           temperature_2m_min: Array(7).fill(15),
           weather_code: Array(7).fill(1),
           wind_speed_10m_max: Array(7).fill(8),
-          precipitation_sum: Array(7).fill(0)
-        }
-      }
+          precipitation_sum: Array(7).fill(0),
+        },
+      },
     };
 
     it('should transform weather forecast correctly', async () => {
@@ -118,14 +118,16 @@ describe('OpenMeteoService', () => {
         weatherCode: 1,
         windSpeed: 5,
         precipitation: 0,
-        time: '2025-09-08T12:00:00Z'
+        time: '2025-09-08T12:00:00Z',
       });
     });
 
     it('should handle API errors gracefully', async () => {
       mockAxiosGet.mockRejectedValueOnce(new Error('API Error'));
 
-      await expect(service.getWeatherForecast(51.5074, -0.1278)).rejects.toThrow('Failed to fetch weather forecast');
+      await expect(service.getWeatherForecast(51.5074, -0.1278)).rejects.toThrow(
+        'Failed to fetch weather forecast'
+      );
     });
 
     it('should respect the days parameter', async () => {
@@ -137,8 +139,8 @@ describe('OpenMeteoService', () => {
         expect.any(String),
         expect.objectContaining({
           params: expect.objectContaining({
-            forecast_days: 5
-          })
+            forecast_days: 5,
+          }),
         })
       );
     });
@@ -153,14 +155,14 @@ describe('OpenMeteoService', () => {
             temperature_2m: -5,
             weather_code: 71,
             wind_speed_10m: 5,
-            precipitation: 2
+            precipitation: 2,
           },
           hourly: {
             time: ['2025-09-08T12:00:00Z'],
             temperature_2m: [-5],
             weather_code: [71],
             wind_speed_10m: [5],
-            precipitation: [2]
+            precipitation: [2],
           },
           daily: {
             time: ['2025-09-08'],
@@ -168,9 +170,9 @@ describe('OpenMeteoService', () => {
             temperature_2m_min: [-7],
             weather_code: [71],
             wind_speed_10m_max: [5],
-            precipitation_sum: [2]
-          }
-        }
+            precipitation_sum: [2],
+          },
+        },
       });
 
       const result = await service.getRecommendedActivities(51.5074, -0.1278);
@@ -180,7 +182,7 @@ describe('OpenMeteoService', () => {
       expect(result[0]).toHaveProperty('activity');
       expect(result[0]).toHaveProperty('score');
       expect(result[0]).toHaveProperty('description');
-      
+
       // Verify scores are sorted in descending order
       const scores = result.map(activity => activity.score);
       const sortedScores = [...scores].sort((a, b) => b - a);
@@ -190,7 +192,9 @@ describe('OpenMeteoService', () => {
     it('should handle API errors gracefully', async () => {
       (mockAxios.create().get as jest.Mock).mockRejectedValueOnce(new Error('API Error'));
 
-      await expect(service.getRecommendedActivities(51.5074, -0.1278)).rejects.toThrow('Failed to generate activity recommendations');
+      await expect(service.getRecommendedActivities(51.5074, -0.1278)).rejects.toThrow(
+        'Failed to generate activity recommendations'
+      );
     });
   });
 });

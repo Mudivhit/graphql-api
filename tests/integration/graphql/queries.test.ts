@@ -10,10 +10,10 @@ describe('GraphQL API Integration Tests', () => {
 
   beforeAll(async () => {
     const MockedOpenMeteoService = OpenMeteoService as jest.MockedClass<typeof OpenMeteoService>;
-    
+
     // Mock OpenMeteoService methods
     MockedOpenMeteoService.prototype.searchCities.mockResolvedValue([
-      { id: '1', name: 'London', country: 'UK', latitude: 51.5074, longitude: -0.1278 }
+      { id: '1', name: 'London', country: 'UK', latitude: 51.5074, longitude: -0.1278 },
     ]);
 
     MockedOpenMeteoService.prototype.getWeatherForecast.mockResolvedValue({
@@ -22,19 +22,19 @@ describe('GraphQL API Integration Tests', () => {
         weatherCode: 1,
         windSpeed: 5,
         precipitation: 0,
-        time: '2025-09-08T12:00:00Z'
+        time: '2025-09-08T12:00:00Z',
       },
       hourly: [],
-      daily: []
+      daily: [],
     });
 
     MockedOpenMeteoService.prototype.getRecommendedActivities.mockResolvedValue([
-      { activity: 'Skiing', score: 90, description: 'Perfect conditions!' }
+      { activity: 'Skiing', score: 90, description: 'Perfect conditions!' },
     ]);
 
     server = new ApolloServer({
       typeDefs,
-      resolvers: new Resolvers().getResolvers() as any
+      resolvers: new Resolvers().getResolvers() as any,
     });
     await server.start();
   });
@@ -59,7 +59,7 @@ describe('GraphQL API Integration Tests', () => {
 
       const response = await server.executeOperation({
         query,
-        variables: { query: 'London', limit: 5 }
+        variables: { query: 'London', limit: 5 },
       });
 
       expect(response.body.kind).toBe('single');
@@ -81,7 +81,7 @@ describe('GraphQL API Integration Tests', () => {
 
       const response = await server.executeOperation({
         query,
-        variables: { query: 'a', limit: 5 }
+        variables: { query: 'a', limit: 5 },
       });
 
       expect(response.body.kind).toBe('single');
@@ -124,13 +124,15 @@ describe('GraphQL API Integration Tests', () => {
 
       const response = await server.executeOperation({
         query,
-        variables: { latitude: 51.5074, longitude: -0.1278, days: 3 }
+        variables: { latitude: 51.5074, longitude: -0.1278, days: 3 },
       });
 
       expect(response.body.kind).toBe('single');
       if (response.body.kind === 'single') {
         expect(response.body.singleResult.errors).toBeUndefined();
-        const data = response.body.singleResult.data as { getWeatherForecast: { current: unknown } };
+        const data = response.body.singleResult.data as {
+          getWeatherForecast: { current: unknown };
+        };
         expect(data?.getWeatherForecast?.current).toBeDefined();
       }
     });
@@ -150,7 +152,7 @@ describe('GraphQL API Integration Tests', () => {
 
       const response = await server.executeOperation({
         query,
-        variables: { latitude: 51.5074, longitude: -0.1278 }
+        variables: { latitude: 51.5074, longitude: -0.1278 },
       });
 
       expect(response.body.kind).toBe('single');

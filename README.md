@@ -30,22 +30,22 @@ Omissions & Trade-offs
 --------------------
 1. **Data Caching**:
    - Currently no caching layer for weather/geocoding responses
-   This simplified implementation although it could lead to potential API rate limits
+   - This simplified implementation although it could lead to potential API rate limits
    
 2. **Error Handling**:
    - Basic error wrapping with GraphQLError
    - Missing detailed error codes/categories
-   This was quick to implement than detailed error reporting
+   - This was quick to implement than detailed error reporting
 
 3. **Activity Scoring**:
    - Simple heuristic-based scoring
    - Hard-coded weather interpretation
-   With a proper scoring standard/criteria this could be implemented for accuracy
+   - With a proper scoring standard/criteria this could be implemented for accuracy
 
 4. **Testing**:
    - Unit tests and basic integration tests
    - Missing E2E tests and load tests
-   Testing the core functionality coverage was faster and easier to begin with
+   - Testing the core functionality coverage was faster and easier to begin with
 
 Future Improvements
 -----------------

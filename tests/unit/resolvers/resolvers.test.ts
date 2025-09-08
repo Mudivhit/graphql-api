@@ -15,14 +15,14 @@ describe('Resolvers', () => {
 
   describe('searchCities', () => {
     it('should validate search query length', async () => {
-      await expect(
-        resolvers.searchCities(null, { query: 'a', limit: 10 })
-      ).rejects.toThrow('Search query must be at least 2 characters long');
+      await expect(resolvers.searchCities(null, { query: 'a', limit: 10 })).rejects.toThrow(
+        'Search query must be at least 2 characters long'
+      );
     });
 
     it('should return cities for valid query', async () => {
       const mockCities = [
-        { id: '1', name: 'London', country: 'UK', latitude: 51.5074, longitude: -0.1278 }
+        { id: '1', name: 'London', country: 'UK', latitude: 51.5074, longitude: -0.1278 },
       ];
 
       MockedOpenMeteoService.prototype.searchCities.mockResolvedValue(mockCities);
@@ -36,9 +36,9 @@ describe('Resolvers', () => {
     it('should handle service errors', async () => {
       MockedOpenMeteoService.prototype.searchCities.mockRejectedValue(new Error('Service error'));
 
-      await expect(
-        resolvers.searchCities(null, { query: 'London', limit: 10 })
-      ).rejects.toThrow('Service error');
+      await expect(resolvers.searchCities(null, { query: 'London', limit: 10 })).rejects.toThrow(
+        'Service error'
+      );
     });
   });
 
@@ -65,9 +65,15 @@ describe('Resolvers', () => {
 
     it('should return weather forecast for valid coordinates', async () => {
       const mockForecast = {
-        current: { temperature: 20, weatherCode: 1, windSpeed: 5, precipitation: 0, time: '2025-09-08T12:00:00Z' },
+        current: {
+          temperature: 20,
+          weatherCode: 1,
+          windSpeed: 5,
+          precipitation: 0,
+          time: '2025-09-08T12:00:00Z',
+        },
         hourly: [],
-        daily: []
+        daily: [],
       };
 
       MockedOpenMeteoService.prototype.getWeatherForecast.mockResolvedValue(mockForecast);
@@ -101,7 +107,7 @@ describe('Resolvers', () => {
     it('should return recommended activities for valid coordinates', async () => {
       const mockActivities = [
         { activity: 'Skiing', score: 90, description: 'Perfect conditions!' },
-        { activity: 'Indoor Sightseeing', score: 70, description: 'Good option.' }
+        { activity: 'Indoor Sightseeing', score: 70, description: 'Good option.' },
       ];
 
       MockedOpenMeteoService.prototype.getRecommendedActivities.mockResolvedValue(mockActivities);
@@ -116,11 +122,13 @@ describe('Resolvers', () => {
     });
 
     it('should handle service errors', async () => {
-      MockedOpenMeteoService.prototype.getRecommendedActivities.mockRejectedValue(new Error('Service error'));
+      MockedOpenMeteoService.prototype.getRecommendedActivities.mockRejectedValue(
+        new Error('Service error')
+      );
 
-      await expect(
-        resolvers.getRecommendedActivities(null, validCoords)
-      ).rejects.toThrow('Service error');
+      await expect(resolvers.getRecommendedActivities(null, validCoords)).rejects.toThrow(
+        'Service error'
+      );
     });
   });
 });

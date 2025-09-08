@@ -24,7 +24,8 @@ class OpenMeteoService {
   private readonly activityRecommendationService: ActivityRecommendationService;
 
   constructor() {
-    this.geocodingURL = process.env.OPENMETEO_GEOCODING_URL || 'https://geocoding-api.open-meteo.com/v1';
+    this.geocodingURL =
+      process.env.OPENMETEO_GEOCODING_URL || 'https://geocoding-api.open-meteo.com/v1';
     this.weatherURL = process.env.OPENMETEO_WEATHER_URL || 'https://api.open-meteo.com/v1';
     this.client = axios.create({
       timeout: 10000,
@@ -33,28 +34,28 @@ class OpenMeteoService {
   }
 
   async searchCities(query: string, limit: number = 10) {
-  /**
-   * Search cities by name using the Open-Meteo geocoding endpoint.
-   * @param query - Partial or full city name to search for.
-   * @param limit - Maximum number of results to return (default 10).
-   * @returns Array of City objects with id, name, country, latitude and longitude.
-   * @throws Error when the HTTP request fails.
-   */
-  try {
-  const response = await this.client.get<OpenMeteoSearchResponse>(
+    /**
+     * Search cities by name using the Open-Meteo geocoding endpoint.
+     * @param query - Partial or full city name to search for.
+     * @param limit - Maximum number of results to return (default 10).
+     * @returns Array of City objects with id, name, country, latitude and longitude.
+     * @throws Error when the HTTP request fails.
+     */
+    try {
+      const response = await this.client.get<OpenMeteoSearchResponse>(
         `${this.geocodingURL}/search`,
         {
           params: {
             name: query,
             count: limit,
             language: 'en',
-            format: 'json'
+            format: 'json',
           },
         }
       );
 
       return (
-        response.data.results?.map((city) => ({
+        response.data.results?.map(city => ({
           id: `${city.id}`,
           name: city.name,
           country: city.country,
@@ -69,22 +70,22 @@ class OpenMeteoService {
   }
 
   async getWeatherForecast(latitude: number, longitude: number, days: number = 7) {
-  /**
-   * Fetch a forecast from the Open-Meteo API and normalize it to the
-   * WeatherDTO-friendly shape used by the GraphQL schema.
-   *
-   * Notes:
-   * - `days` is capped at 16 to match the remote API limits.
-   * - Returned units are assumed to be: temperature (°C), windSpeed (m/s), precipitation (mm).
-   *
-   * @param latitude - Latitude in decimal degrees (-90..90).
-   * @param longitude - Longitude in decimal degrees (-180..180).
-   * @param days - Number of days to request (default 7).
-   * @returns An object with `current`, `hourly` (next 24 items) and `daily` arrays.
-   * @throws Error when the HTTP request fails or response shape is unexpected.
-   */
-  try {
-  const response = await this.client.get<OpenMeteoWeatherResponse>(
+    /**
+     * Fetch a forecast from the Open-Meteo API and normalize it to the
+     * WeatherDTO-friendly shape used by the GraphQL schema.
+     *
+     * Notes:
+     * - `days` is capped at 16 to match the remote API limits.
+     * - Returned units are assumed to be: temperature (°C), windSpeed (m/s), precipitation (mm).
+     *
+     * @param latitude - Latitude in decimal degrees (-90..90).
+     * @param longitude - Longitude in decimal degrees (-180..180).
+     * @param days - Number of days to request (default 7).
+     * @returns An object with `current`, `hourly` (next 24 items) and `daily` arrays.
+     * @throws Error when the HTTP request fails or response shape is unexpected.
+     */
+    try {
+      const response = await this.client.get<OpenMeteoWeatherResponse>(
         `${this.weatherURL}/forecast`,
         {
           params: {
@@ -92,14 +93,15 @@ class OpenMeteoService {
             longitude,
             current: 'temperature_2m,weather_code,wind_speed_10m,precipitation',
             hourly: 'temperature_2m,weather_code,wind_speed_10m,precipitation',
-            daily: 'weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_sum',
+            daily:
+              'weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_sum',
             timezone: 'auto',
             forecast_days: Math.min(days, 16), // Max 16 days forecast
           },
         }
       );
 
-  const { current, hourly, daily } = response.data;
+      const { current, hourly, daily } = response.data;
 
       // Process current weather
       const currentWeather: WeatherDTO = {
@@ -139,18 +141,17 @@ class OpenMeteoService {
     }
   }
 
-
   async getRecommendedActivities(latitude: number, longitude: number): Promise<ActivityScore[]> {
-  /**
-   * Obtain recommendations by fetching the current weather and running
-   * a set of heuristic scoring functions.
-   *
-   * @param latitude - Latitude in decimal degrees.
-   * @param longitude - Longitude in decimal degrees.
-   * @returns Sorted list of ActivityScore objects (highest score first).
-   * @throws Error when weather fetch or recommendation generation fails.
-   */
-  try {
+    /**
+     * Obtain recommendations by fetching the current weather and running
+     * a set of heuristic scoring functions.
+     *
+     * @param latitude - Latitude in decimal degrees.
+     * @param longitude - Longitude in decimal degrees.
+     * @returns Sorted list of ActivityScore objects (highest score first).
+     * @throws Error when weather fetch or recommendation generation fails.
+     */
+    try {
       const { current } = await this.getWeatherForecast(latitude, longitude, 1);
       const activityScores = [
         this.activityRecommendationService.calculateSkiingScore(current),
@@ -169,5 +170,3 @@ class OpenMeteoService {
 }
 
 export default OpenMeteoService;
-
-
